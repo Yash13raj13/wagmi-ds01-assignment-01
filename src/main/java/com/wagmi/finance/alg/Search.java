@@ -18,3 +18,21 @@ public final class Search {
         throw new UnsupportedOperationException("Not implemented");
     }
 }
+public static int binarySearchById(Transaction[] sortedById, String id) {
+    if (sortedById == null) throw new NullPointerException();
+    if (id == null) return -1;
+
+    int low = 0, high = sortedById.length - 1;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        String midId = sortedById[mid].getId();
+
+        int cmp = midId.compareTo(id);
+        if (cmp == 0) return mid;
+        else if (cmp < 0) low = mid + 1;
+        else high = mid - 1;
+    }
+
+    return -1;
+}
