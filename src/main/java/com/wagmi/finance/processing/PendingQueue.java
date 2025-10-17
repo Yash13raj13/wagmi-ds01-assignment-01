@@ -1,13 +1,5 @@
 package main.java.com.wagmi.finance.processing;
 
-/*
- TODO[Student]: Circular queue for pending transactions
- - Implement circular `enqueue` and `dequeue` with head/tail updates and size tracking.
- - Enforce overflow/underflow rules as per tests.
- - Validate null enqueues (should throw).
- - Run `PendingQueueTest` after changes.
-*/
-
 import main.java.com.wagmi.finance.model.Transaction;
 
 public class PendingQueue {
@@ -21,13 +13,22 @@ public class PendingQueue {
     }
 
     public void enqueue(Transaction tx) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (tx == null) throw new NullPointerException("transaction cannot be null");
+        if (isFull()) throw new UnsupportedOperationException("overflow");
+
+        data[tail] = tx;
+        tail = (tail + 1) % data.length;
+        size++;
     }
 
     public Transaction dequeue() {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (isEmpty()) throw new UnsupportedOperationException("underflow");
+
+        Transaction tx = data[head];
+        data[head] = null; // optional cleanup
+        head = (head + 1) % data.length;
+        size--;
+        return tx;
     }
 
     public boolean isEmpty() {

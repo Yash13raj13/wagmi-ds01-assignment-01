@@ -1,63 +1,83 @@
 package main.java.com.wagmi.finance.budget;
 
-/*
- TODO[Student]: Budget management with hash-based structures
- - Manage valid categories, budget limits, and spending.
- - `applyTransaction`: ignore income and non-positive amounts; update spending for valid categories.
- - `isApproachingLimit`: threshold around 40% (see tests), strictly less than limit.
- - `isOverLimit`: at or over limit for positive limits.
- - See `BudgetManagerTest` for edge cases and exact expectations.
-*/
-
+import main.java.com.wagmi.finance.model.Transaction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import main.java.com.wagmi.finance.model.Transaction;
-
 public class BudgetManager {
-    private final Map<String, Double> categoryLimits = new HashMap<>();
-    private final Map<String, Double> categorySpending = new HashMap<>();
-    private final Set<String> validCategories = new HashSet<>();
+    // FIX #1: Lower the threshold to 40% to match the test expectations.
+    private static final double APPROACHING_LIMIT_THRESHOLD = 0.40;
+
+    private final Set<String> validCategories;
+    private final Map<String, Double> budgetLimits;
+    private final Map<String, Double> spentAmounts;
+
+    public BudgetManager() {
+        this.validCategories = new HashSet<>();
+        this.budgetLimits = new HashMap<>();
+        this.spentAmounts = new HashMap<>();
+    }
 
     public void addValidCategory(String category) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (category == null || category.isBlank()) {
+            throw new IllegalArgumentException("Category cannot be null or blank.");
+        }
+        validCategories.add(category);
     }
 
     public boolean isValidCategory(String category) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        return category != null && validCategories.contains(category);
     }
 
     public void setBudgetLimit(String category, double limit) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (isValidCategory(category)) {
+            budgetLimits.put(category, limit);
+        }
     }
 
     public double getBudgetLimit(String category) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public double getSpending(String category) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        return budgetLimits.getOrDefault(category, 0.0);
     }
 
     public void applyTransaction(Transaction tx) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (tx == null || !isValidCategory(tx.getCategory())) {
+            return;
+        }
+        if (!tx.isIncome()) {
+            String category = tx.getCategory();
+            double expenseAmount = tx.getAmount();
+            double currentSpending = spentAmounts.getOrDefault(category, 0.0);
+            spentAmounts.put(category, currentSpending + expenseAmount);
+        }
+    }
+
+    public double getSpending(String category) {
+        return spentAmounts.getOrDefault(category, 0.0);
     }
 
     public boolean isApproachingLimit(String category) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (!isValidCategory(category)) {
+            return false;
+        }
+        double limit = getBudgetLimit(category);
+        if (limit <= 0) {
+            return false;
+        }
+        double spending = getSpending(category);
+        return (spending / limit) >= APPROACHING_LIMIT_THRESHOLD;
     }
 
     public boolean isOverLimit(String category) {
-        // stub
-        throw new UnsupportedOperationException("Not implemented");
+        if (!isValidCategory(category)) {
+            return false;
+        }
+        double limit = getBudgetLimit(category);
+        if (limit < 0) {
+            return false;
+        }
+        // FIX #2: Change from > to >= to include cases where spending equals the limit.
+        return getSpending(category) >= limit;
     }
 }
